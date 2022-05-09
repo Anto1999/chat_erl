@@ -12,26 +12,29 @@ user_loop(Name) ->
 	 
 	%% Mby user need register
 	%%register(list_to_atom(string:lowercase(Name)),self()),
-	
-	io:format("Proces spawned ~p~n",[self()]),
-	
     receive
 	subscribe ->
 		register(list_to_atom(string:lowercase(Name)),self()),
 		io:format("Proces spawned ~p~n",[self()]),
 	    io:format("User: ~p subscribe.~n",[Name]),
+		server_chat ! {self(), subscribe},
 	    user_loop(Name);
 	unsubscribe ->
-		io:format("Logged out!!!!!~n");
+		io:format("Logged out!!!!!~n"),
+		server_chat ! {self(),unsubscribe},
+		user_loop(Name);
 	{Msg,message} ->
 	
 		io:format("Message: ~p~n",[Msg]),
+		server_chat ! {Msg,message},
 		user_loop(Name);
-	_ ->
-	    io:format("Šta pišeš ~n")
+	{Msg,from_server} ->
+		io:format("Message: ~p~n",[Msg]),
+		user_loop(Name);
+	logg_out ->
+	    io:format("LoggOut. ~n")
 		
     end.
-	
 	
 
 	
